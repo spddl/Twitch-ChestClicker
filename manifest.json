@@ -1,9 +1,9 @@
 {
   "update_url": "https://clients2.google.com/service/update2/crx",
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Twitch ChestClicker",
   "description": "ChestClicker for Twitch",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "icons": {
     "48": "logo48.png",
     "128": "logo128.png",
@@ -21,16 +21,15 @@
     }
   ],
   "background": {
-    "scripts": [
-      "background.js"
-    ],
-    "persistent": true
+    "service_worker": "background.js"
   },
   "permissions": [
-    "*://*.twitch.tv/*",
     "tabs"
   ],
-  "browser_action": {
+  "host_permissions": [
+    "*://*.twitch.tv/*"
+  ],
+  "action": {
     "default_title": "Twitch ChestClicker",
     "default_icon": {
       "48": "logo48.png",

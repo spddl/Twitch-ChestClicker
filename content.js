@@ -1,4 +1,4 @@
-/* global chrome, MutationObserver */
+/* global chrome, MutationObserver, Node */
 
 // ==UserScript==
 // @name         ChestClicker
@@ -8,9 +8,6 @@
 // ==/UserScript==
 
 let localPoints = -1
-let lastPointsUpdate = 0
-let lastUpdate = +new Date()
-let lastChestUpdate = +new Date()
 
 const parsePoints = num => {
   if (num.indexOf('.') === -1) {
@@ -18,6 +15,19 @@ const parsePoints = num => {
   } else {
     return num * 1000
   }
+}
+
+const createSavedPoints = (targetNode, textContent) => {
+  const savedPoints = document.createElement('span')
+  savedPoints.id = 'savedPoints'
+  savedPoints.style.fontSize = 'smaller'
+  savedPoints.style.marginLeft = '5'
+  savedPoints.style.cursor = 'pointer'
+  savedPoints.style.userSelect = 'none'
+  if (textContent) {
+    savedPoints.textContent = textContent
+  }
+  targetNode.appendChild(savedPoints)
 }
 
 const createEvent = targetNode => {
@@ -29,14 +39,7 @@ const createEvent = targetNode => {
 
   // init Points
   localPoints = parsePoints(targetNode.querySelector('span.tw-animated-number').innerText)
-
-  const savedPoints = document.createElement('span')
-  savedPoints.id = 'savedPoints'
-  savedPoints.style.fontSize = 'smaller'
-  savedPoints.style.marginLeft = '5'
-  savedPoints.style.cursor = 'pointer'
-  savedPoints.style.userSelect = 'none'
-  targetNode.appendChild(savedPoints)
+  createSavedPoints(targetNode)
 
   let timeoutID
   const observer = new MutationObserver(() => { // https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver
@@ -53,8 +56,12 @@ const createEvent = targetNode => {
         }
 
         const savedPoints = document.getElementById('savedPoints')
-        if (points !== localPoints && '+ ' + (points - localPoints) !== savedPoints.textContent) {
-          savedPoints.textContent = '+ ' + Math.round(points - localPoints)
+        if (savedPoints === null) {
+          createSavedPoints(targetNode, '+ ' + Math.round(points - localPoints))
+        } else {
+          if (points !== localPoints && '+ ' + (points - localPoints) !== savedPoints.textContent) {
+            savedPoints.textContent = '+ ' + Math.round(points - localPoints)
+          }
         }
       }
     }, 500)
@@ -66,18 +73,18 @@ const createEvent = targetNode => {
   })
 }
 
-const checkDiv = () => {
+const checkDiv = (delay = 0) => {
   setTimeout(() => {
     const CommunityPointsSummary = document.querySelectorAll('div.community-points-summary').length !== 0 ? document.querySelectorAll('div.community-points-summary')[0] : []
     if (CommunityPointsSummary instanceof Node) {
       createEvent(CommunityPointsSummary)
     } else {
-      checkDiv()
+      checkDiv(delay + 100 > 1000 ? 1000 : delay + 100)
     }
-  }, 500)
+  }, delay)
 }
 
-if (typeof (chrome) !== 'undefined' && chrome.runtime != 'undefined') {
+if (typeof (chrome) !== 'undefined' && chrome.runtime !== 'undefined') {
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.text === 'createEvent') {
       if (window.savedPoints) {

@@ -45,32 +45,40 @@ const createEvent = targetNode => {
   const observer = new MutationObserver(() => { // https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver
     window.clearTimeout(timeoutID)
     timeoutID = window.setTimeout(() => {
-      const CommunityPointsSummary = document.querySelectorAll('div.community-points-summary').length !== 0 ? document.querySelectorAll('div.community-points-summary')[0] : []
-      if (CommunityPointsSummary) {
-        const points = parsePoints(CommunityPointsSummary.querySelector('span.tw-animated-number').innerText)
+      const DOMCommunityPointsSummary = document.querySelector('div.community-points-summary')
+      if (DOMCommunityPointsSummary instanceof Node) {
+        const twAnimatedNumber = DOMCommunityPointsSummary.querySelector('span.tw-animated-number:not(.tw-animated-number--monospaced)')
+        if (twAnimatedNumber instanceof Node) {
+          const points = parsePoints(twAnimatedNumber.innerText)
 
-        const checkButton = CommunityPointsSummary.querySelectorAll('button.tw-button')
-        if (checkButton.length !== 0) {
-          checkButton[0].click() // Click the Chest
-          console.log(new Date(), 'Chest')
-        }
+          const checkButton = DOMCommunityPointsSummary.querySelectorAll('button.tw-button')
+          if (checkButton.length !== 0) {
+            checkButton[0].click() // Click the Chest
+            console.log(new Date(), 'Chest')
+          }
 
-        const savedPoints = document.getElementById('savedPoints')
-        if (savedPoints === null) {
-          createSavedPoints(targetNode, '+ ' + Math.round(points - localPoints))
-        } else {
-          if (points !== localPoints && '+ ' + (points - localPoints) !== savedPoints.textContent) {
-            savedPoints.textContent = '+ ' + Math.round(points - localPoints)
+          const savedPoints = document.getElementById('savedPoints')
+          if (savedPoints === null) {
+            createSavedPoints(targetNode, '+ ' + Math.round(points - localPoints))
+          } else {
+            if (points !== localPoints && '+ ' + (points - localPoints) !== savedPoints.textContent) {
+              savedPoints.textContent = '+ ' + Math.round(points - localPoints)
+            }
           }
         }
+      } else {
+        observer.disconnect()
+        window.removeEventListener('beforeunload', observerUnload)
+        checkDiv()
       }
     }, 500)
   })
+  const observerUnload = () => {
+    observer.disconnect()
+  }
   observer.observe(targetNode, { childList: true, subtree: true })
 
-  window.addEventListener('beforeunload', () => {
-    observer.disconnect()
-  })
+  window.addEventListener('beforeunload', observerUnload)
 }
 
 const checkDiv = (delay = 0) => {

@@ -7,6 +7,8 @@
 // @grant        none
 // ==/UserScript==
 
+// url:chrome-extension://onffpgmmikhpfoojcfmgopgeddmgbabj/content.js
+
 let localPoints = -1
 
 const parsePoints = num => {
@@ -38,7 +40,12 @@ const createEvent = targetNode => {
   document.querySelector('div.tw-full-height.tw-relative.tw-z-above').style.display = 'none'
 
   // init Points
-  localPoints = parsePoints(targetNode.querySelector('span.tw-animated-number').innerText)
+  try {
+    localPoints = parsePoints(targetNode.querySelector('div[data-test-selector=balance-string]').innerText)
+  } catch (error) {
+    localPoints = 0
+  }
+  console.log({ localPoints })
   createSavedPoints(targetNode)
 
   let timeoutID
@@ -47,22 +54,31 @@ const createEvent = targetNode => {
     timeoutID = window.setTimeout(() => {
       const DOMCommunityPointsSummary = document.querySelector('div.community-points-summary')
       if (DOMCommunityPointsSummary instanceof Node) {
-        const twAnimatedNumber = DOMCommunityPointsSummary.querySelector('span.tw-animated-number:not(.tw-animated-number--monospaced)')
+        const twAnimatedNumber = DOMCommunityPointsSummary.querySelector('div[data-test-selector=balance-string]:not(.tw-animated-number--monospaced)')
         if (twAnimatedNumber instanceof Node) {
           const points = parsePoints(twAnimatedNumber.innerText)
 
           const checkButton = DOMCommunityPointsSummary.querySelectorAll('button.tw-button')
           if (checkButton.length !== 0) {
             checkButton[0].click() // Click the Chest
-            console.log(new Date(), 'Chest')
+            console.info(new Date(), 'Chest')
           }
 
           const savedPoints = document.getElementById('savedPoints')
+
+          const _points = Math.round(points - localPoints)
+          let _prefix = ''
+          if (_points > 0) {
+            _prefix = '+ '
+          } else if (_points < 0) {
+            _prefix = '- '
+          }
+          const temp = `${_prefix}${_points}`
           if (savedPoints === null) {
-            createSavedPoints(targetNode, '+ ' + Math.round(points - localPoints))
+            createSavedPoints(targetNode, temp)
           } else {
-            if (points !== localPoints && '+ ' + (points - localPoints) !== savedPoints.textContent) {
-              savedPoints.textContent = '+ ' + Math.round(points - localPoints)
+            if (points !== localPoints && temp !== savedPoints.textContent) {
+              savedPoints.textContent = temp
             }
           }
         }

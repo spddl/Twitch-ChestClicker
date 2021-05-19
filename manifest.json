@@ -3,7 +3,7 @@
   "manifest_version": 3,
   "name": "Twitch ChestClicker",
   "description": "ChestClicker for Twitch",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "icons": {
     "48": "logo48.png",
     "128": "logo128.png",

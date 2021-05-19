@@ -37,7 +37,10 @@ const createEvent = targetNode => {
   targetNode.style.opacity = 0.33
 
   // hides Chests
-  document.querySelector('div.tw-full-height.tw-relative.tw-z-above').style.display = 'none'
+  const DOMCommunityPointsSummary = document.querySelector('div.community-points-summary')
+  if (DOMCommunityPointsSummary.querySelector('div.tw-transition') instanceof Node) {
+    DOMCommunityPointsSummary.querySelector('div.tw-transition').parentNode.style.display = 'none'
+  }
 
   // init Points
   try {
@@ -52,15 +55,14 @@ const createEvent = targetNode => {
   const observer = new MutationObserver(() => { // https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver
     window.clearTimeout(timeoutID)
     timeoutID = window.setTimeout(() => {
-      const DOMCommunityPointsSummary = document.querySelector('div.community-points-summary')
       if (DOMCommunityPointsSummary instanceof Node) {
         const twAnimatedNumber = DOMCommunityPointsSummary.querySelector('div[data-test-selector=balance-string]:not(.tw-animated-number--monospaced)')
         if (twAnimatedNumber instanceof Node) {
           const points = parsePoints(twAnimatedNumber.innerText)
 
-          const checkButton = DOMCommunityPointsSummary.querySelectorAll('button.tw-button')
-          if (checkButton.length !== 0) {
-            checkButton[0].click() // Click the Chest
+          const checkButton = DOMCommunityPointsSummary.querySelector('div.claimable-bonus__icon')
+          if (checkButton !== null) {
+            checkButton.closest('button').click() // Click the Chest
             console.info(new Date(), 'Chest')
           }
 

@@ -70,10 +70,8 @@ const createEvent = targetNode => {
 
           const _points = Math.round(points - localPoints)
           let _prefix = ''
-          if (_points > 0) {
-            _prefix = '+ '
-          } else if (_points < 0) {
-            _prefix = '- '
+		  if (_points > 0) {
+            _prefix = '+'
           }
           const temp = `${_prefix}${_points}`
           if (savedPoints === null) {
